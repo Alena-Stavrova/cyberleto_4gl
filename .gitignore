@@ -1,0 +1,6 @@
+screenshots/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+item_list.xlsx
