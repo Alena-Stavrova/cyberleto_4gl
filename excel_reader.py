@@ -18,9 +18,13 @@ def read_promo_excel(filepath):
 
     items = []
     for row in sheet.iter_rows(min_row=2, values_only=True):
+        name = row[name_col]
+        if name and name.startswith('(RU) '):
+            name = name[5:]
+
         items.append({
             'sku': str(row[sku_col]),
-            'name': row[name_col],
+            'name': name,
             'old_price': str(row[old_price_col]),
             'discount' : str(row[discount_col]),
             'new_price': str(round_price(row[new_price_col]))

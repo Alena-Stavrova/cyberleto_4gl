@@ -85,12 +85,7 @@ def _compare_field(expected, actual, field_name, errors, case_insensitive=False)
     else:
         match = (expected == actual)
     if not match:
-        errors.append(f"{field_name} mismatch: expected {expected}, got {actual}")
-
-    # Compare a single field and return match bool + append error if mismatch
-    if expected != actual:
-        errors.append(f"{field_name} mismatch: expected {expected}, got {actual}")
-        
+        errors.append(f"{field_name} mismatch: expected {expected}, got {actual}")        
 
 def search_for_sku(driver, sku):
     wait = WebDriverWait(driver, 20)
@@ -195,7 +190,7 @@ def check_product(driver, item):
         actual_old_price = None
         actual_discount = None
         actual_new_price = None
-        errors.append('SKU mismatch')
+        errors.append('SKU mismatch, needs review')
     
     result = {
         'sku':                 sku,
