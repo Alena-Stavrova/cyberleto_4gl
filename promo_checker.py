@@ -3,7 +3,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import re
@@ -12,9 +11,6 @@ import os
 import traceback
 import sys
 
-# Initialize driver with None (to be changed later)
-driver = None
-wait = None
 website_main = "https://4glaza.ru/"
 
 # Create the optimized driver (loads fast, limits images)
@@ -37,7 +33,7 @@ def create_optimized_driver():
     
     return driver
 
-def take_screenshot(name):
+def take_screenshot(name, driver):
     # Create screenshot folder, name screenshot images
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
@@ -56,7 +52,7 @@ def extract_price(price_text):
     except ValueError:
         return None
   
-def close_cookie_popup(): 
+def close_cookie_popup(driver): 
     try:
         accept_button = WebDriverWait(driver, 3).until(
                     EC.element_to_be_clickable((By.CSS_SELECTOR, 
@@ -70,7 +66,7 @@ def close_cookie_popup():
     except Exception as e:
         return False # Popup already closed or not present
 
-def close_region_popup():
+def close_region_popup(driver):
     try:
         decline_button = WebDriverWait(driver, 3).until(
                     EC.element_to_be_clickable((By.ID, "cancelLocation"))
@@ -83,22 +79,28 @@ def close_region_popup():
     except Exception as e:
         return False # Popup already closed or not present
 
-def _compare_field(expected, actual, field_name, errors):
-    # Compare a single field and return match bool + append error if mismatch
-    if expected == actual:
-        return True
+def _compare_field(expected, actual, field_name, errors, case_insensitive=False):
+    if case_insensitive:
+        match = (str(expected).lower() == str(actual).lower())
     else:
+        match = (expected == actual)
+    if not match:
         errors.append(f"{field_name} mismatch: expected {expected}, got {actual}")
-        return False
 
-def search_for_sku(sku):
+    # Compare a single field and return match bool + append error if mismatch
+    if expected != actual:
+        errors.append(f"{field_name} mismatch: expected {expected}, got {actual}")
+        
+
+def search_for_sku(driver, sku):
+    wait = WebDriverWait(driver, 20)
     try:
         print("Navigating to main page...")
         driver.get(website_main)
         time.sleep(3)
 
-        close_cookie_popup()
-        close_region_popup()
+        close_cookie_popup(driver)
+        close_region_popup(driver)
         
         print("Opening search box...")
         search_box = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "search__input")))
@@ -129,7 +131,7 @@ def search_for_sku(sku):
         # Scroll to the element to take screenshot
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", card_sku_elem)
         time.sleep(2)
-        take_screenshot("search_results")
+        take_screenshot("search_results", driver)
 
         if sku == card_sku:        
             print("Search completed successfully")
@@ -137,11 +139,10 @@ def search_for_sku(sku):
         else:
             print(f"✗ First found item doesn't match the search: looked for {sku}, first item is {card_sku}")
             return False
-            
-        
+                
     except Exception as e:
         print(f"✗ Search failed: {str(e)}")
-        take_screenshot("search_error")
+        take_screenshot("search_error", driver)
         return False
 
 def scrape_product_card(driver):
@@ -159,41 +160,58 @@ def scrape_product_card(driver):
     return {
         'name': name,
         'old_price': old_price,
-        'new_price': None,    # TODO: implement when promo is live
-        'discount': None      # TODO: implement when promo is live
+        'new_price': 200,  # TODO: implement when promo is live
+        'discount': 15      # TODO: implement when promo is live
     }
 
 
-def check_product(driver, wait, item):
+def check_product(driver, item):
+    wait = WebDriverWait(driver, 20)
     # item: dict from excel_reader with sku, name, old_price, discount, new_price
     sku = item['sku']
     expected_name = item['name']
-    expected_old_price = item['old_price']
-    expected_discount = item['discount']
-    expected_new_price = item['new_price']
+    expected_old_price = int(item['old_price'])
+    expected_discount = int(item['discount'])
+    expected_new_price = int(item['new_price'])
     
-    sku_found = search_for_sku(sku)
     errors = []
+    sku_found = search_for_sku(driver, sku)
 
     if sku_found:
         item_website = scrape_product_card(driver) # Returns a dict {'name': 'ABC', 'old_price': '10000'}
-        name_match = _compare_field(expected_name, actual_name, "Name", errors)
-        old_price_match = _compare_field(expected_old_price, actual_old_price, "Old price", errors)
-        discount_match = _compare_field(expected_discount, actual_discount, "Discount", errors)
-        new_price_match = _compare_field(expected_new_price, actual_new_price, "New price", errors)
+        
+        actual_name = item_website['name']
+        actual_old_price = int(item_website['old_price'])
+        actual_discount = item_website['discount']
+        actual_new_price = int(item_website['new_price'])
+
+        _compare_field(expected_name, actual_name, "Name", errors, case_insensitive=True)
+        _compare_field(expected_old_price, actual_old_price, "Old price", errors)
+        _compare_field(expected_discount, actual_discount, "Discount", errors)
+        _compare_field(expected_new_price, actual_new_price, "New price", errors) 
+
     else:
         actual_name = None
-        name_match = None
         actual_old_price = None
-        old_price_match = None
         actual_discount = None
-        discount_match = None
         actual_new_price = None
-        new_price_match = None
         errors.append('SKU mismatch')
     
-    result = dict(sku = sku, expected_name = expected_name, actual_name = actual_name, name_match = name_match, expected_old_price = expected_old_price, actual_old_price = actual_old_price, old_price_match = old_price_match, expected_discount = expected_discount, actual_discount = actual_discount, discount_match = discount_match, expected_new_price = expected_new_price, actual_new_price = actual_new_price, new_price_match = new_price_match)
-    print(result)
+    result = {
+        'sku':                 sku,
+        'expected_name':       expected_name,
+        'actual_name':         actual_name,
+        'expected_old_price':  expected_old_price,
+        'actual_old_price':    actual_old_price,
+        'expected_discount':   expected_discount,
+        'actual_discount':     actual_discount,
+        'expected_new_price':  expected_new_price,
+        'actual_new_price':    actual_new_price,
+        'passed':              len(errors) == 0,
+        'errors':              errors,
+    }
+    return result
+    
         
         
 
