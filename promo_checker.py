@@ -10,10 +10,10 @@ sheet = workbook.active
 # sheet[1] is row 1. Each cell has a .value attribute.
 headers = [cell.value for cell in sheet[1]]
 sku_col = headers.index("Артикул")
-name_col = headers.index("Наименование")
-old_price_col = headers.index("Текущая цена, руб.")
+name_col = headers.index("Номенклатура")
+old_price_col = headers.index("Розница")
 discount_col= headers.index("Скидка")
-new_price_col = headers.index("Конечная цена")
+new_price_col = headers.index("Розница со скидкой")
 
 
 items = []
