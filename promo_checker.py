@@ -11,7 +11,8 @@ import os
 import traceback
 import sys
 
-website_main = "https://4glaza.ru/"
+from config import STAGE_USER, STAGE_PASS
+website_main = f"https://{STAGE_USER}:{STAGE_PASS}@stage.4glaza.ru/"
 
 # Create the optimized driver (loads fast, limits images)
 def create_optimized_driver():
@@ -79,6 +80,19 @@ def close_region_popup(driver):
     except Exception as e:
         return False # Popup already closed or not present
 
+def close_timer(driver):
+    try:
+        close_button = WebDriverWait(driver, 3).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, ".promo-timer__close button[data-close]"))
+        )
+        close_button.click()
+        print("Timer closed")
+        time.sleep(1)
+        return True    
+     
+    except Exception as e:
+        return False # Popup already closed or not present
+
 def _compare_field(expected, actual, field_name, errors, case_insensitive=False):
     if case_insensitive:
         match = (str(expected).lower() == str(actual).lower())
@@ -96,6 +110,7 @@ def search_for_sku(driver, sku):
 
         close_cookie_popup(driver)
         close_region_popup(driver)
+        close_timer(driver)
         
         print("Opening search box...")
         search_box = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "search__input")))
@@ -143,20 +158,20 @@ def search_for_sku(driver, sku):
 def scrape_product_card(driver):
     # Assumes we're already on a product card page
     # Returns dict with old_price, new_price, discount_pct, or None for any missing
-    old_price_text = driver.find_element(By.CLASS_NAME, "product-card__price").text.lower()
+    old_price_text = driver.find_element(By.CLASS_NAME, "product-card__del").text.lower()
     old_price = extract_price(old_price_text)
     name = driver.find_element(By.CLASS_NAME, "product-card__name").text.lower()
 
-    #new_price_text = driver.find_element(By.CLASS_NAME, "product-card__price").text.lower() #### INSERT SELECTOR
-    #new_price = extract_price(new_price_text) ####
-    #disounct_badge = driver.find_element(By.CLASS_NAME, "product-card__price").text.lower() #### INSERT SELECTOR
-    #read discount?
+    new_price_text = driver.find_element(By.CLASS_NAME, "product-card__price").text.lower() 
+    new_price = extract_price(new_price_text) 
+    discount_badge = driver.find_element(By.CSS_SELECTOR, ".badge.badge-danger.badge-promotion").text.lower() 
+    discount = int(extract_price(discount_badge))
 
     return {
         'name': name,
         'old_price': old_price,
-        'new_price': 200,  # TODO: implement when promo is live
-        'discount': 15      # TODO: implement when promo is live
+        'new_price': new_price,
+        'discount': discount
     }
 
 
@@ -190,7 +205,7 @@ def check_product(driver, item):
         actual_old_price = None
         actual_discount = None
         actual_new_price = None
-        errors.append('SKU mismatch, needs review')
+        errors.append('SKU mismatch')
     
     result = {
         'sku':                 sku,

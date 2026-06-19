@@ -20,11 +20,14 @@ driver.maximize_window()
 
 # 4. Loop through items
 results = []
+sku_mismatch_list = []
 try:
     for item in items_to_check:
         try:
             result = checker.check_product(driver, item)
             results.append(result)
+            if 'SKU mismatch'in result['errors']:
+                sku_mismatch_list.append(result)
         except Exception as e:
             results.append({
                 'sku': item.get('sku', 'unknown'),
@@ -38,3 +41,5 @@ finally:
 passed = sum(1 for r in results if r['passed'])
 print(f"Results: {passed}/{len(results)} passed")
 print(results)
+print(f"SKU mismatch, to be reviewed: {len(sku_mismatch_list)} items")
+print(sku_mismatch_list)
