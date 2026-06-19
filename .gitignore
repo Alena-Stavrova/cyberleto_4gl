@@ -4,3 +4,4 @@ __pycache__/
 .env
 .DS_Store
 item_list.xlsx
+config.py
