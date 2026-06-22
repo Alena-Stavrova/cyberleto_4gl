@@ -4,7 +4,7 @@ import math
 def round_price(value):
     return math.floor(value + 0.5)
 
-def read_promo_excel(filepath):
+def read_promo_excel(filepath, website=None):
     workbook = load_workbook(filepath, data_only=True)
     sheet = workbook.active  
 
@@ -14,12 +14,13 @@ def read_promo_excel(filepath):
     old_price_col = headers.index("Розница")
     discount_col= headers.index("Скидка")
     new_price_col = headers.index("Розница со скидкой")
+    levenhuk_col = headers.index("На Левенгук")
 
 
     items = []
     for row in sheet.iter_rows(min_row=2, values_only=True):
         name = row[name_col]
-        if name and name.startswith('(RU) '):
+        if (name and name.startswith('(RU) ')) or (name and name.startswith('(EN) ')):
             name = name[5:]
 
         items.append({
@@ -27,9 +28,14 @@ def read_promo_excel(filepath):
             'name': name,
             'old_price': str(row[old_price_col]),
             'discount' : str(row[discount_col]),
-            'new_price': str(round_price(row[new_price_col]))
+            'new_price': str(round_price(row[new_price_col])),
+            'on_levenhuk': str(row[levenhuk_col]) if row[levenhuk_col] else ''
         })
 
+    if website == "LVH":
+        items = [i for i in items if i['on_levenhuk'] == '+']
+    elif website == '4GL':
+        items = [i for i in items]
     return items
 
 if __name__ == "__main__":
