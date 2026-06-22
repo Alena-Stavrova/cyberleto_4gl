@@ -221,8 +221,8 @@ def check_product(driver, item):
         'errors':              errors,
     }
     return result
-    
-        
+
+
         
 
 

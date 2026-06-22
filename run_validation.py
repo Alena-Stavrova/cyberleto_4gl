@@ -3,7 +3,7 @@ from excel_reader import read_promo_excel
 import promo_checker as checker
 import csv
 
-SAMPLE_SIZE = 3 # Hardcoded, change to None for full run
+SAMPLE_SIZE = 10 # Hardcoded, change to None for full run
 
 # 1. Read the Excel
 items = read_promo_excel("item_list.xlsx")
@@ -37,9 +37,26 @@ try:
 finally:
     driver.quit()
 
-# 5. Print summary
+# 5. Convert to CSV
+fields = ['sku', 'expected_name', 'actual_name', 'expected_old_price', 'actual_old_price', 
+          'expected_discount', 'actual_discount', 'expected_new_price', 'actual_new_price', 'errors']
+
+output_file_path = 'promo_check_results.csv'
+
+with open(output_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
+    csv_writer = csv.writer(csvfile, delimiter=';')
+    csv_writer.writerow(fields)  # header
+    for result in results:
+        row = [result.get(field, '') for field in fields]
+        # Convert errors list to string
+        if isinstance(row[-1], list):  # errors is the last field
+            row[-1] = ', '.join(row[-1])
+        csv_writer.writerow(row)
+
+
+# 6. Print summary
 passed = sum(1 for r in results if r['passed'])
 print(f"Results: {passed}/{len(results)} passed")
 print(results)
-print(f"SKU mismatch, to be reviewed: {len(sku_mismatch_list)} items")
+print(f"SKU mismatch, to be reviewed: {len(sku_mismatch_list)} item(s)")
 print(sku_mismatch_list)
