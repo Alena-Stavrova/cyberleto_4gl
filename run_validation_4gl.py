@@ -1,12 +1,14 @@
 import random
 from excel_reader import read_promo_excel
-import promo_checker as checker
+import promo_checker_4gl as checker
 import csv
+import time
+from utils import create_optimized_driver
 
 SAMPLE_SIZE = 10 # Hardcoded, change to None for full run
 
 # 1. Read the Excel
-items = read_promo_excel("item_list.xlsx")
+items = read_promo_excel("item_list.xlsx", website="4GL")
 
 # 2. Decide which items to check
 if SAMPLE_SIZE:
@@ -15,7 +17,7 @@ else:
     items_to_check = items
 
 # 3. Create driver once
-driver = checker.create_optimized_driver()
+driver = create_optimized_driver()
 driver.maximize_window()
 
 # 4. Loop through items
@@ -41,7 +43,7 @@ finally:
 fields = ['sku', 'expected_name', 'actual_name', 'expected_old_price', 'actual_old_price', 
           'expected_discount', 'actual_discount', 'expected_new_price', 'actual_new_price', 'errors']
 
-output_file_path = 'promo_check_results.csv'
+output_file_path = f'promo_check_results_4GL_{time.time()}.csv'
 
 with open(output_file_path, 'w', newline='', encoding='utf-8-sig') as csvfile:
     csv_writer = csv.writer(csvfile, delimiter=';')
