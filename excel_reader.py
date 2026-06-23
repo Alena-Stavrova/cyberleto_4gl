@@ -1,5 +1,8 @@
+# Reads ALL items, filters by the website
+
 from openpyxl import load_workbook
 import math
+import re
 
 def round_price(value):
     return math.floor(value + 0.5)
@@ -20,8 +23,7 @@ def read_promo_excel(filepath, website=None):
     items = []
     for row in sheet.iter_rows(min_row=2, values_only=True):
         name = row[name_col]
-        if (name and name.startswith('(RU) ')) or (name and name.startswith('(EN) ')):
-            name = name[5:]
+        name = re.sub(r'^\([A-Z]{2}\)\s+', '', name) if name else name
 
         items.append({
             'sku': str(row[sku_col]),
@@ -33,7 +35,7 @@ def read_promo_excel(filepath, website=None):
         })
 
     if website == "LVH":
-        items = [i for i in items if i['on_levenhuk'] == '+']
+        items = [i for i in items if i['on_levenhuk'] == ' +']
     elif website == '4GL':
         items = [i for i in items]
     return items
