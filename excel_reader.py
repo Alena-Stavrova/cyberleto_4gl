@@ -43,5 +43,5 @@ def read_promo_excel(filepath, website=None):
 if __name__ == "__main__":
     items = read_promo_excel("item_list.xlsx")
     print(f"Read {len(items)} items")
-    print(items[0])   # First item
-    print(items[-1])  # Last item
+    #print(items[0])   # First item
+    #print(items[-1])  # Last item
