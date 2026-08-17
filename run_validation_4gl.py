@@ -5,16 +5,18 @@ import csv
 import time
 from utils import create_optimized_driver
 
-SAMPLE_SIZE = 10 # Hardcoded, change to None for full run
+SAMPLE_SIZE = None # Hardcoded, change to None for full run
 
 # 1. Read the Excel
 items = read_promo_excel("item_list.xlsx", website="4GL")
+
 
 # 2. Decide which items to check
 if SAMPLE_SIZE:
     items_to_check = random.sample(items, min(SAMPLE_SIZE, len(items)))
 else:
-    items_to_check = items
+    # items_to_check = items
+    items_to_check = items[740:]
 
 # 3. Create driver once
 driver = create_optimized_driver()

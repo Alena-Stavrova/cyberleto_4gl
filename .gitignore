@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 item_list.xlsx
 config.py
+results

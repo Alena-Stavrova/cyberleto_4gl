@@ -5,7 +5,7 @@ import csv
 import time
 from utils import create_optimized_driver
 
-SAMPLE_SIZE = 3 # Hardcoded, change to None for full run
+SAMPLE_SIZE = None # Hardcoded, change to None for full run
 
 # 1. Read the Excel
 items = read_promo_excel("item_list.xlsx", website="LVH")

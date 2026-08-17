@@ -6,7 +6,8 @@ import time
 from utils import take_screenshot, extract_price, _compare_field
 from config import STAGE_USER, STAGE_PASS
 
-website_main = f"https://{STAGE_USER}:{STAGE_PASS}@stage.4glaza.ru/"
+# website_main = f"https://{STAGE_USER}:{STAGE_PASS}@stage.4glaza.ru/"
+website_main = "https://4glaza.ru/"
 
 def close_cookie_popup(driver): 
     try:
