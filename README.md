@@ -18,7 +18,9 @@ Some notes after running it:
 1. Most of the mismatches were small name mismatches, such as "Super Plossl" in the file not matching "super plössl" on the website. Eventually, I just ignored name mismatches as not real errors.
 2. Another annoying mismatch was a SKU mismatch which were also not a real error. On our websites, colors work like this: if I type "81414" in the search (black item, discounted), the results will give me a card for 85312 (same item, but in purple) that may or may not be discounted. The fix for this will involve either going to the product page and checking the other color or selecting another color on a small card, both of which seemed like a hassle - so I didn't add it and just make sure those are genuine multicolored items (it's usually obvious by the name).
 3. In addition to this, I found a few real issues, such as incorrect discounts or no discounts, promo conflicts (item listed for 2 promos) and a few items from the list missing on the website. There were 5 issues for LVH and 8 for 4GL which is actually a pretty small number (4GL list has almost 1000 itmes) - meaning my colleagues did a great job setting up the promo. All those issues were promptly fixed as well.
-4. I ran 4GL script after work, running my PC through the night (it was my first time running a script that way). 
+4. I ran 4GL script after work, running my PC through the night (it was my first time running a script that way).
+
+Before running it on our production websites, the promo was set up and tested on our testing ("stage") website. There are some lines in my code hinting on that as well as small "utils" file
 
 
 
